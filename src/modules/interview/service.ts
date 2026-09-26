@@ -2,6 +2,9 @@ import { prisma } from "../../database/prisma.js";
 import { createEmptyBrief } from "./brief.js";
 import type { WebsiteBrief } from "./types.js";
 import { processInterviewMessage } from "./ai.js";
+import { generateLovablePrompt } from "./lovable-prompt.js";
+
+const MAX_INTERVIEW_QUESTIONS = 12;
 
 export async function createInterview(
   whatsapp: string,
@@ -35,6 +38,7 @@ export async function createInterview(
     },
   });
 }
+
 export async function getActiveInterview(whatsapp: string) {
   return prisma.interview.findFirst({
     where: {
@@ -48,6 +52,7 @@ export async function getActiveInterview(whatsapp: string) {
     },
   });
 }
+
 export async function updateInterview(
   interviewId: number,
   brief: WebsiteBrief,
@@ -65,6 +70,7 @@ export async function updateInterview(
     },
   });
 }
+
 export async function getInterviewBrief(
   interviewId: number,
 ): Promise<WebsiteBrief> {
@@ -80,6 +86,7 @@ export async function getInterviewBrief(
 
   return JSON.parse(interview.brief) as WebsiteBrief;
 }
+
 export async function handleInterviewMessage(
   whatsapp: string,
   message: string,
@@ -92,22 +99,50 @@ export async function handleInterviewMessage(
 
   const brief = await getInterviewBrief(interview.id);
 
+  const questionsAsked = interview.currentStep;
+
+  const questionsRemaining = Math.max(
+    MAX_INTERVIEW_QUESTIONS - questionsAsked,
+    0,
+  );
+
   const result = await processInterviewMessage(
     brief,
     message,
+    questionsRemaining,
   );
+
+  const nextStep = interview.currentStep + 1;
+
+  const isCompleted =
+    result.complete ||
+    nextStep >= MAX_INTERVIEW_QUESTIONS;
 
   const updatedInterview = await updateInterview(
     interview.id,
     result.brief,
-    interview.currentStep + 1,
-    result.complete ? "completed" : "active",
+    nextStep,
+    isCompleted ? "completed" : "active",
   );
+
+  if (isCompleted) {
+    const lovablePrompt = await generateLovablePrompt(
+      result.brief,
+    );
+
+    return {
+      interview: updatedInterview,
+      reply: lovablePrompt,
+      complete: true,
+      brief: result.brief,
+      lovablePrompt,
+    };
+  }
 
   return {
     interview: updatedInterview,
     reply: result.reply,
-    complete: result.complete,
+    complete: false,
     brief: result.brief,
   };
 }

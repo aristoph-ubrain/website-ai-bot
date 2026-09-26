@@ -25,5 +25,7 @@ export function createEmptyBrief(): WebsiteBrief {
     sections: [],
 
     mainGoal: null,
+
+    requestedFeatures: [],
   };
 }

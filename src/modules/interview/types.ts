@@ -26,4 +26,6 @@ export interface WebsiteBrief {
   sections: string[];
 
   mainGoal: string | null;
+
+  requestedFeatures: string[];
 }

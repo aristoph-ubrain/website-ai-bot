@@ -1,27 +1,19 @@
 import { createEmptyBrief } from "./modules/interview/brief.js";
 import { processInterviewMessage } from "./modules/interview/ai.js";
 
-let brief = createEmptyBrief();
+const brief = createEmptyBrief();
 
-let result = await processInterviewMessage(
+const result = await processInterviewMessage(
   brief,
   "Tenho uma barbearia chamada Corte 10 em Maraponga, Fortaleza.",
+  0,
 );
 
-console.log("1ª resposta:");
+console.log("Resposta:");
 console.log(result.reply);
 
-brief = result.brief;
+console.log("\nConcluída:");
+console.log(result.complete);
 
-result = await processInterviewMessage(
-  brief,
-  "Quero o site principalmente para conseguir novos clientes pelo WhatsApp.",
-);
-
-console.log("\n2ª resposta:");
-console.log(result.reply);
-
-console.log("\nEntrevista concluída:", result.complete);
-
-console.log("\nBriefing final:");
+console.log("\nBriefing:");
 console.dir(result.brief, { depth: null });
