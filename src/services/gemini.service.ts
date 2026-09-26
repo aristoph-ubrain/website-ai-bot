@@ -19,3 +19,18 @@ export async function generateText(prompt: string): Promise<string> {
 
   return response.text ?? "";
 }
+export async function generateStructuredText(
+  prompt: string,
+  responseSchema: Record<string, unknown>,
+): Promise<string> {
+  const response = await ai.models.generateContent({
+    model: "gemini-3.5-flash-lite",
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema,
+    },
+  });
+
+  return response.text ?? "";
+}

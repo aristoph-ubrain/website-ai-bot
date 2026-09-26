@@ -13,8 +13,22 @@ datasource db {
 }
 
 model Customer {
-  id        Int      @id @default(autoincrement())
-  whatsapp  String   @unique
-  name      String?
-  createdAt DateTime @default(now())
+  id          Int         @id @default(autoincrement())
+  whatsapp    String      @unique
+  name        String?
+  createdAt   DateTime    @default(now())
+
+  interviews  Interview[]
+}
+
+model Interview {
+  id          Int       @id @default(autoincrement())
+  customerId  Int
+  status      String    @default("active")
+  currentStep Int       @default(0)
+  brief       String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  customer    Customer  @relation(fields: [customerId], references: [id])
 }
