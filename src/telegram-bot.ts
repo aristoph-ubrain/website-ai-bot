@@ -1,8 +1,45 @@
-import { getUpdates } from "./services/telegram.service.js";
-import { handleInterviewMessage } from "./modules/interview/service.js";
-import { sendMessage } from "./services/telegram.service.js";
+import {
+    getUpdates,
+    sendMessage,
+} from "./services/telegram.service.js";
+
+import {
+    handleInterviewMessage,
+    startNewInterview,
+} from "./modules/interview/service.js";
 
 let offset: number | undefined;
+
+async function handleTelegramMessage(
+    chatId: number,
+    text: string,
+) {
+    if (text === "/start") {
+        await startNewInterview(String(chatId));
+
+        const result = await handleInterviewMessage(
+            String(chatId),
+            "Olá, quero criar um novo site.",
+        );
+
+        await sendMessage(
+            chatId,
+            result.reply,
+        );
+
+        return;
+    }
+
+    const result = await handleInterviewMessage(
+        String(chatId),
+        text,
+    );
+
+    await sendMessage(
+        chatId,
+        result.reply,
+    );
+}
 
 async function startBot() {
     console.log("Bot iniciado. Aguardando mensagens...");
@@ -29,14 +66,9 @@ async function startBot() {
                     `[Telegram] ${message.chat.id}: ${message.text}`,
                 );
 
-                const result = await handleInterviewMessage(
-                    String(message.chat.id),
-                    message.text,
-                );
-
-                await sendMessage(
+                await handleTelegramMessage(
                     message.chat.id,
-                    result.reply,
+                    message.text,
                 );
             }
         } catch (error) {

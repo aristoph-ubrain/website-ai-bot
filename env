@@ -1,0 +1,8 @@
+//adicione .env no arquivo
+
+//url do database
+DATABASE_URL=""
+//chave do gemini
+GEMINI_API_KEY=""
+//token telegram bot
+TELEGRAM_BOT_TOKEN=""

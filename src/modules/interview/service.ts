@@ -21,12 +21,12 @@ export async function createInterview(
 
     create: name !== undefined
       ? {
-          whatsapp,
-          name,
-        }
+        whatsapp,
+        name,
+      }
       : {
-          whatsapp,
-        },
+        whatsapp,
+      },
   });
 
   const brief = createEmptyBrief();
@@ -38,7 +38,24 @@ export async function createInterview(
     },
   });
 }
+export async function startNewInterview(
+  whatsapp: string,
+  name?: string,
+) {
+  await prisma.interview.updateMany({
+    where: {
+      status: "active",
+      customer: {
+        whatsapp,
+      },
+    },
+    data: {
+      status: "cancelled",
+    },
+  });
 
+  return createInterview(whatsapp, name);
+}
 export async function getActiveInterview(whatsapp: string) {
   return prisma.interview.findFirst({
     where: {
@@ -130,8 +147,11 @@ export async function handleInterviewMessage(
       result.brief,
     );
 
+    const newInterview = await createInterview(whatsapp);
+
     return {
       interview: updatedInterview,
+      nextInterview: newInterview,
       reply: lovablePrompt,
       complete: true,
       brief: result.brief,
